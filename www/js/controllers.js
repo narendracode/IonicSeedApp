@@ -1,6 +1,6 @@
 angular.module('ionicseedapp.controllers', [])
 
-.controller('AppCtrl', function($scope, $ionicModal, $timeout) {
+.controller('AppCtrl', function($scope, $ionicModal, $timeout,$location,AuthService, AUTH_EVENTS) {
 
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
@@ -9,8 +9,52 @@ angular.module('ionicseedapp.controllers', [])
   //$scope.$on('$ionicView.enter', function(e) {
   //});
 
-})
+    
+  $scope.username = AuthService.username();
+ 
+  $scope.$on(AUTH_EVENTS.notAuthorized, function(event) {
+    var alertPopup = $ionicPopup.alert({
+      title: 'Unauthorized!',
+      template: 'You are not allowed to access this resource.'
+    });
+  });
+ 
+  $scope.$on(AUTH_EVENTS.notAuthenticated, function(event) {
+    AuthService.logout();
+    $state.go('login');
+    var alertPopup = $ionicPopup.alert({
+      title: 'Session Lost!',
+      template: 'Sorry, You have to login again.'
+    });
+  });
+ 
+  $scope.setCurrentUsername = function(name) {
+    $scope.username = name;
+  };
 
+  $scope.login = function(data){
+    $location.path('/app/playlists');
+  };
+    
+    
+})
+.controller('LoginCtrl',function($scope,$state,$ionicPopup,AuthService){
+    $scope.data = {};
+    $scope.login = function(data){
+        AuthService
+        .login(data.username,data.password)
+        .then(function(authenticated){
+             $state.go('main.dash', {}, {reload: true});
+             $scope.setCurrentUsername(data.username);
+        },function(err){
+            var alertPopup = $ionicPopup.alert({
+                title: 'Login Failed',
+                template: 'Please check your credentials!'
+            });
+        })
+        ;
+    };
+})
 .controller('PlaylistsCtrl', function($scope) {
   $scope.playlists = [
     { title: 'Reggae', id: 1 },

@@ -3,7 +3,7 @@
 // angular.module is a global place for creating, registering and retrieving Angular modules
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
-angular.module('ionicseedapp', ['ionic','ionicseedapp.controllers'])
+angular.module('ionicseedapp', ['ionic','ionicseedapp.constants','ionicseedapp.controllers','ionicseedapp.services'])
 
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
@@ -23,8 +23,13 @@ angular.module('ionicseedapp', ['ionic','ionicseedapp.controllers'])
   });
 })
 
-.config(function($stateProvider, $urlRouterProvider) {
+.config(function($stateProvider, $urlRouterProvider,$locationProvider) {
   $stateProvider
+   .state('home', {
+    url: '/',
+    templateUrl: 'templates/home.html',
+    controller: 'AppCtrl'
+  })
 
     .state('app', {
     url: '/app',
@@ -37,7 +42,8 @@ angular.module('ionicseedapp', ['ionic','ionicseedapp.controllers'])
     url: '/login',
     views: {
       'menuContent': {
-        templateUrl: 'templates/login.html'
+        templateUrl: 'templates/login.html',
+        controller: 'LoginCtrl'
       }
     }
   })
@@ -79,6 +85,6 @@ angular.module('ionicseedapp', ['ionic','ionicseedapp.controllers'])
     }
   });
   // if none of the above states are matched, use this as the fallback
-  $urlRouterProvider.otherwise('/app/login');
+  $urlRouterProvider.otherwise('/');
 });
 
