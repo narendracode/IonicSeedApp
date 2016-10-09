@@ -1,10 +1,11 @@
-angular.module('ionicseedapp.services', [])
-.service('AuthService',function($q,$http,USER_ROLES){
+angular.module('ionicseedapp.services', ['ngResource'])
+.service('AuthService',function($q,$http,$resource,USER_ROLES){
     var LOCAL_TOKEN_KEY = 'usertoken';
     var username = '';
     var isAuthenticated = false;
     var role = '';
     var authToken;
+    var LoginResource = $resource('http://vps308056.ovh.net:3000/auth/login');
     
   function loadUserCredentials() {
     var token = window.localStorage.getItem(LOCAL_TOKEN_KEY);
@@ -14,20 +15,23 @@ angular.module('ionicseedapp.services', [])
   }
  
   function storeUserCredentials(token) {
-    console.log("inside store user credentials token: "+token);
+   // console.log("inside store user credentials token: "+token);
     window.localStorage.setItem(LOCAL_TOKEN_KEY, token);
     useCredentials(token);
   }
  
   function useCredentials(token) {
-    username = token.split('.')[0];
+    var user = parseToken(token);
+    //console.log("User : "+JSON.stringify(user));
+    username = user.name;
+    var userRole = user.role;
     isAuthenticated = true;
     authToken = token;
  
-    if (username == 'admin') {
+    if (userRole == 'admin') {
       role = USER_ROLES.admin
     }
-    if (username == 'user') {
+    if (userRole == 'user') {
       role = USER_ROLES.public
     }
  
@@ -38,6 +42,7 @@ angular.module('ionicseedapp.services', [])
   function destroyUserCredentials() {
     authToken = undefined;
     username = '';
+    userRole = '';
     isAuthenticated = false;
     $http.defaults.headers.common['X-Auth-Token'] = undefined;
     window.localStorage.removeItem(LOCAL_TOKEN_KEY);
@@ -45,14 +50,35 @@ angular.module('ionicseedapp.services', [])
    
   var login = function(name, pw) {
     return $q(function(resolve, reject) {
-      if ((name == 'admin' && pw == '1') || (name == 'user' && pw == '1')) {
-        // Make a request and receive your auth token from your server
-        console.log("inside services name: "+name);
+        
+        var loginResource = new LoginResource();
+        loginResource.email = 'test@test.com';
+	    loginResource.password = 'password';
+        loginResource.$save(function(result){
+            console.log("result from Login API : "+JSON.stringify(parseToken(result.data.token)));
+            
+            if((typeof result !== 'undefined') && result.type){
+                storeUserCredentials(result.data.token);
+                console.log(" resolve is called");
+                resolve('Login success.');
+            }else{
+                console.log("reject is called");
+                reject('Login Failed.');
+            }
+
+            
+        });
+        
+    /*  if ((name == 'admin' && pw == '1') || (name == 'user' && pw == '1')) {
         storeUserCredentials(name + '.yourServerToken');
         resolve('Login success.');
       } else {
         reject('Login Failed.');
-      }
+      } 
+    */
+        
+        
+        
     });
   };
  
@@ -70,7 +96,48 @@ angular.module('ionicseedapp.services', [])
   
  loadUserCredentials();
 
-  return {
+    /* token processing start */
+    
+    function urlBase64Decode(str) {
+      var output = str.replace('-', '+').replace('_', '/');
+      switch (output.length % 4) {
+          case 0:
+              break;
+          case 2:
+              output += '==';
+              break;
+          case 3:
+              output += '=';
+              break;
+          default:
+              throw 'Illegal base64url string!';
+      }
+      return window.atob(output);
+  }
+
+    function getUserFromToken() {
+        var token = $localStorage.token;
+        var user = {};
+        if (typeof token !== 'undefined') {
+            var encoded = token.split('.')[1];
+            user = JSON.parse(urlBase64Decode(encoded));
+        }
+        return user;
+    }
+
+    function parseToken(token){
+        var user = {};
+        if(token){
+            var encoded = token.split('.')[1];
+            user = JSON.parse(urlBase64Decode(encoded));
+        }
+        return user;  
+    }
+    /*
+        token processing end
+    */
+    
+    return {
     login: login,
     logout: logout,
     isAuthorized: isAuthorized,

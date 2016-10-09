@@ -40,8 +40,6 @@ $rootScope.$on('$stateChangeStart',function(event,next,nextParams,fromState){
         $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
       }
     }
-    
-    console.log(" is authenticated called : "+AuthService.isAuthenticated());
     if (!AuthService.isAuthenticated()) {
       if (next.name !== 'home') {
         event.preventDefault();

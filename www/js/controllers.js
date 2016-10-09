@@ -31,9 +31,7 @@ angular.module('ionicseedapp.controllers', [])
  
 
     $scope.logout = function(){
-        console.log("before logout : "+$scope.username);
         AuthService.logout();  
-       console.log("after logout : "+$scope.username);
         $state.go('home', {}, {reload: true});
     };
  
