@@ -1,6 +1,6 @@
 angular.module('ionicseedapp.controllers', [])
 
-.controller('AppCtrl', function($scope, $ionicModal, $timeout,$location,AuthService, AUTH_EVENTS) {
+.controller('AppCtrl', function($scope, $ionicModal, $state ,$timeout,$location,AuthService, AUTH_EVENTS) {
 
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
@@ -11,6 +11,7 @@ angular.module('ionicseedapp.controllers', [])
 
     
   $scope.username = AuthService.username();
+  console.log("username: "+$scope.username);
  
   $scope.$on(AUTH_EVENTS.notAuthorized, function(event) {
     var alertPopup = $ionicPopup.alert({
@@ -28,15 +29,14 @@ angular.module('ionicseedapp.controllers', [])
     });
   });
  
-  $scope.setCurrentUsername = function(name) {
-    $scope.username = name;
-  };
 
-  $scope.login = function(data){
-    $location.path('/app/playlists');
-  };
-    
-    
+    $scope.logout = function(){
+        console.log("before logout : "+$scope.username);
+        AuthService.logout();  
+       console.log("after logout : "+$scope.username);
+        $state.go('home', {}, {reload: true});
+    };
+ 
 })
 .controller('LoginCtrl',function($scope,$state,$ionicPopup,AuthService){
     $scope.data = {};
@@ -44,7 +44,7 @@ angular.module('ionicseedapp.controllers', [])
         AuthService
         .login(data.username,data.password)
         .then(function(authenticated){
-             $state.go('main.dash', {}, {reload: true});
+             $state.go('app.browse', {}, {reload: true});
              $scope.setCurrentUsername(data.username);
         },function(err){
             var alertPopup = $ionicPopup.alert({
@@ -54,6 +54,16 @@ angular.module('ionicseedapp.controllers', [])
         })
         ;
     };
+    $scope.setCurrentUsername = function(name) {
+        $scope.username = name;
+    };
+    
+    $scope.logout = function(){
+      AuthService.logout();  
+    };
+})
+.controller('BrowseCtrl',function($scope){
+    
 })
 .controller('PlaylistsCtrl', function($scope) {
   $scope.playlists = [

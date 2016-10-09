@@ -1,6 +1,6 @@
 angular.module('ionicseedapp.services', [])
 .service('AuthService',function($q,$http,USER_ROLES){
-    var LOCAL_TOKEN_KEY = 'yourTokenKey';
+    var LOCAL_TOKEN_KEY = 'usertoken';
     var username = '';
     var isAuthenticated = false;
     var role = '';
@@ -14,6 +14,7 @@ angular.module('ionicseedapp.services', [])
   }
  
   function storeUserCredentials(token) {
+    console.log("inside store user credentials token: "+token);
     window.localStorage.setItem(LOCAL_TOKEN_KEY, token);
     useCredentials(token);
   }
@@ -46,6 +47,7 @@ angular.module('ionicseedapp.services', [])
     return $q(function(resolve, reject) {
       if ((name == 'admin' && pw == '1') || (name == 'user' && pw == '1')) {
         // Make a request and receive your auth token from your server
+        console.log("inside services name: "+name);
         storeUserCredentials(name + '.yourServerToken');
         resolve('Login success.');
       } else {
@@ -59,6 +61,7 @@ angular.module('ionicseedapp.services', [])
   };
  
   var isAuthorized = function(authorizedRoles) {
+      console.log("is authorized is called : "+authorizedRoles)
     if (!angular.isArray(authorizedRoles)) {
       authorizedRoles = [authorizedRoles];
     }
